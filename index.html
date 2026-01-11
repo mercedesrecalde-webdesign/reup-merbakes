@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#RecetasEnUnaPagina - Mercedes Recalde</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@1,900&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #fffaf5; 
+        }
+        
+        .font-brand { font-family: 'Inter', sans-serif; font-weight: 900; }
+        .font-serif-italic { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 900; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        
+        /* Efecto de Blanco y Negro a Color */
+        .photo-hover-effect {
+            filter: grayscale(100%);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .photo-hover-effect:hover {
+            filter: grayscale(0%);
+            transform: scale(1.03);
+        }
+
+        .bg-pattern {
+            background-image: radial-gradient(#fb923c 0.6px, transparent 0.6px);
+            background-size: 30px 30px;
+            opacity: 0.08;
+        }
+
+        .text-stroke {
+            -webkit-text-stroke: 1px #ea580c;
+            color: transparent;
+        }
+
+        /* DISEÑO ARTÍSTICO DEL LOGO */
+        .logo-container {
+            display: inline-block;
+            line-height: 0.75;
+        }
+
+        .text-pagina {
+            color: #ea580c; /* Color naranja para Pagina */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+        
+        // --- COMPONENTES DE ICONOS MANUALES ---
+        const XSocialIcon = ({ size = 20, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+                <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" />
+            </svg>
+        );
+
+        const InstagramIcon = ({ size = 20, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+            </svg>
+        );
+
+        const Icon = ({ name, size = 20, className = "" }) => {
+            const iconData = window.lucide ? window.lucide[name] : null;
+            if (!iconData) return null;
+            const [tagName, attributes, children] = iconData;
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                    {children.map((child, index) => {
+                        const [childTag, childAttrs] = child;
+                        return React.createElement(childTag, { ...childAttrs, key: index });
+                    })}
+                </svg>
+            );
+        };
+
+        const INITIAL_RECIPES = [
+            {
+                id: 1,
+                title: "Mousse de Chocolate Vegana",
+                category: "Pastelería sin gluten y vegana",
+                description: "Técnica profesional para emulsiones estables con 3 ingredientes.",
+                ingredients: ["200g chocolate amargo", "1 taza de aquafaba", "Azúcar glass"],
+                instructions: "Montar aquafaba. Derretir chocolate. Unir con espátula.",
+                time: "20 min",
+                image: "https://images.unsplash.com/photo-1541783245831-57d6fb0926d3?auto=format&fit=crop&q=80&w=800",
+                date: "2024-01-05"
+            },
+            {
+                id: 2,
+                title: "Pan de Masa Madre",
+                category: "Panadería",
+                description: "Guía técnica para un alveolado perfecto y costra crujiente.",
+                ingredients: ["Harina integral", "Agua", "Masa madre activa", "Sal"],
+                instructions: "Autolisis, pliegues, fermentación y horneado con vapor.",
+                time: "24h",
+                image: "https://images.unsplash.com/photo-1585478259715-876acc5be8eb?auto=format&fit=crop&q=80&w=800",
+                date: "2024-01-02"
+            }
+        ];
+
+        const CATEGORIES = ["Todos", "Pastelería", "Pastelería sin gluten y vegana", "Panadería", "Cocina salada", "Newsletters"];
+
+        function App() {
+            const [view, setView] = useState("recipes"); 
+            const [activeCategory, setActiveCategory] = useState("Todos");
+            const [searchQuery, setSearchQuery] = useState("");
+            const [selectedRecipe, setSelectedRecipe] = useState(null);
+
+            const filteredRecipes = useMemo(() => {
+                return INITIAL_RECIPES.filter(recipe => {
+                    const matchesCategory = activeCategory === "Todos" || (recipe.category === activeCategory);
+                    const matchesSearch = recipe.title.toLowerCase().includes(searchQuery.toLowerCase());
+                    return matchesCategory && matchesSearch;
+                });
+            }, [activeCategory, searchQuery]);
+
+            return (
+                <div className="min-h-screen pb-12 relative overflow-x-hidden">
+                    <div className="absolute inset-0 bg-pattern pointer-events-none"></div>
+
+                    {/* Navbar */}
+                    <header className="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50 shadow-sm">
+                        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                            <div 
+                                className="flex items-center gap-3 cursor-pointer group"
+                                onClick={() => { setView("recipes"); setSelectedRecipe(null); window.scrollTo(0,0); }}
+                            >
+                                <div className="bg-orange-600 p-2 rounded-xl text-white shadow-lg shadow-orange-200">
+                                    <Icon name="ChefHat" size={24} />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="font-brand text-lg tracking-tighter text-gray-900 leading-none">#RecetasEnUnaPagina</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-orange-600">Mercedes Recalde</span>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                <button 
+                                    onClick={() => { setView("about"); window.scrollTo(0,0); }}
+                                    className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${view === "about" ? "bg-orange-600 text-white shadow-lg" : "bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200"}`}
+                                >
+                                    Sobre Mí
+                                </button>
+                                <div className="h-4 w-px bg-orange-200 hidden sm:block"></div>
+                                <a href="https://instagram.com/Schoolinarymer" target="_blank" className="text-pink-600 hover:scale-110 transition-transform"><InstagramIcon size={22} /></a>
+                                <a href="https://twitter.com/MerBakes" target="_blank" className="text-black hover:scale-110 transition-transform"><XSocialIcon size={20} /></a>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
+                        {view === "about" ? (
+                            /* --- VISTA SOBRE MÍ --- */
+                            <div className="animate-in space-y-24">
+                                <section className="flex flex-col lg:flex-row items-center gap-16 bg-white p-8 md:p-20 rounded-[3.5rem] shadow-2xl border border-orange-50 relative overflow-hidden">
+                                    <div className="w-full lg:w-1/2 space-y-10 relative z-10">
+                                        <div>
+                                            <span className="text-orange-500 text-xs font-black uppercase tracking-[0.5em] mb-4 block underline decoration-orange-200 decoration-4 underline-offset-8">Biografía Profesional</span>
+                                            <h2 className="text-6xl md:text-8xl font-brand text-gray-900 leading-[0.85] tracking-tighter leading-none">Mucho más <br/> que una <br/> receta.</h2>
+                                        </div>
+                                        <div className="space-y-6 text-gray-600 text-lg leading-relaxed border-l-8 border-orange-500 pl-8 font-medium">
+                                            <p>Soy <strong>Mercedes Recalde</strong>, Tecnica Superior en Gastronomía y Docente certificada. Mi vida profesional se resume en una misión: democratizar la técnica gastronómica.</p>
+                                            <p>A través de <strong>@MerBakes</strong> y <strong>@Schoolinarymer</strong>, comparto el rigor de la pastelería profesional adaptado al hogar. Este archivo digital es el punto de encuentro de todo mi contenido técnico.</p>
+                                        </div>
+                                        <button onClick={() => setView("recipes")} className="bg-orange-600 text-white px-10 py-5 rounded-3xl font-black uppercase tracking-widest text-xs hover:bg-orange-700 transition-all shadow-xl flex items-center gap-3 group">
+                                            Explorar mis Recetas <Icon name="ArrowRight" size={18} className="group-hover:translate-x-2 transition-transform" />
+                                        </button>
+                                    </div>
+                                    <div className="w-full lg:w-1/2 relative">
+                                        <div className="absolute -inset-10 bg-orange-100/50 rounded-full blur-3xl opacity-50"></div>
+                                        <div className="relative group">
+                                            <img src="Mer-3155.jpg" className="relative w-full aspect-[4/5] object-cover rounded-[3rem] shadow-2xl border-8 border-white transition-all duration-700" alt="Mercedes Recalde" />
+                                            <div className="absolute -bottom-10 -right-4 bg-orange-500 text-white p-8 rounded-[2.5rem] shadow-2xl">
+                                                <Icon name="Sparkles" size={44} className="animate-pulse" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="space-y-12 pb-12">
+                                    <div className="text-center space-y-4">
+                                        <h3 className="text-3xl font-brand text-gray-900 uppercase tracking-tighter">En el Estudio</h3>
+                                        <p className="text-gray-500 italic max-w-2xl mx-auto font-medium">Un recorrido visual por mis clases, producciones y el día a día entre harinas y técnicas profesionales.</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
+                                        <div className="photo-hover-effect overflow-hidden rounded-[3rem] shadow-xl md:col-span-2 md:row-span-2">
+                                            <img src="Mer-3103.jpg" className="w-full h-full object-cover" alt="Mer en acción" />
+                                        </div>
+                                        <div className="photo-hover-effect overflow-hidden rounded-[2.5rem] shadow-lg aspect-square"><img src="Mer-3140.jpg" className="w-full h-full object-cover" /></div>
+                                        <div className="photo-hover-effect overflow-hidden rounded-[2.5rem] shadow-lg aspect-square"><img src="Mer-3098.jpg" className="w-full h-full object-cover" /></div>
+                                        <div className="photo-hover-effect overflow-hidden rounded-[2.5rem] shadow-lg aspect-square"><img src="Mer-3131.jpg" className="w-full h-full object-cover" /></div>
+                                        <div className="photo-hover-effect overflow-hidden rounded-[2.5rem] shadow-lg aspect-square"><img src="Mer-3110.jpg" className="w-full h-full object-cover" /></div>
+                                        <div className="photo-hover-effect overflow-hidden rounded-[2.5rem] shadow-lg aspect-square"><img src="Mer-3157.jpg" className="w-full h-full object-cover" /></div>
+                                        <div className="photo-hover-effect overflow-hidden rounded-[2.5rem] shadow-lg aspect-square"><img src="Mer-3151.jpg" className="w-full h-full object-cover" /></div>
+                                    </div>
+                                </section>
+                            </div>
+                        ) : (
+                            /* --- VISTA DE RECETAS - BRANDING CENTRAL GIGANTE --- */
+                            <div className="animate-in">
+                                <section className="text-center mb-24 space-y-12">
+                                    <div className="inline-block px-6 py-2 bg-orange-100 rounded-full text-[10px] font-black uppercase tracking-[0.5em] text-orange-600 mb-4 shadow-sm border border-orange-200">
+                                        Biblioteca Culinaria Digital
+                                    </div>
+                                    
+                                    <div className="logo-container">
+                                        <h2 className="text-7xl md:text-[12rem] font-brand text-gray-900 leading-[0.75] tracking-tighter mb-10">
+                                            #Recetas<br/>
+                                            <span className="text-stroke">EnUna</span>
+                                            <span className="font-serif-italic text-pagina">
+                                                Pagina
+                                            </span>
+                                        </h2>
+                                    </div>
+
+                                    <p className="text-xl md:text-3xl text-gray-600 max-w-3xl mx-auto font-bold leading-relaxed tracking-tight">
+                                        Tu acceso directo a la cocina <br className="hidden md:block"/> 
+                                        <span className="text-orange-600">sin secretos y paso a paso.</span>
+                                    </p>
+                                    <div className="text-xs uppercase tracking-[0.3em] text-gray-400 font-bold">
+                                        Por Mercedes Recalde · Tecnica Superior en Gastronomía y Docente certificada
+                                    </div>
+                                </section>
+
+                                {/* Filtros y Buscador */}
+                                <div className="space-y-12 mb-24">
+                                    <div className="relative max-w-2xl mx-auto group">
+                                        <div className="absolute left-8 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-orange-500 transition-colors">
+                                            <Icon name="Search" size={30} />
+                                        </div>
+                                        <input 
+                                            type="text" 
+                                            placeholder="¿Qué técnica o receta buscás hoy?"
+                                            className="w-full pl-20 pr-10 py-7 rounded-full border-2 border-orange-100 focus:outline-none focus:ring-[12px] focus:ring-orange-500/5 focus:border-orange-300 bg-white shadow-2xl transition-all font-medium text-xl placeholder:text-gray-300"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="flex flex-wrap justify-center gap-4">
+                                        {CATEGORIES.map(cat => (
+                                            <button
+                                                key={cat}
+                                                onClick={() => setActiveCategory(cat)}
+                                                className={`px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-md ${
+                                                    activeCategory === cat 
+                                                    ? "bg-orange-600 text-white shadow-orange-200 scale-110" 
+                                                    : "bg-white text-gray-400 border border-orange-100 hover:bg-orange-50 hover:text-orange-700"
+                                                }`}
+                                            >
+                                                {cat}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Rejilla */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                                    {filteredRecipes.map(recipe => (
+                                        <article 
+                                            key={recipe.id}
+                                            onClick={() => setSelectedRecipe(recipe)}
+                                            className="bg-white rounded-[3.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer group border border-orange-50 flex flex-col h-full"
+                                        >
+                                            <div className="relative h-80 overflow-hidden">
+                                                <img src={recipe.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt={recipe.title} />
+                                            </div>
+                                            <div className="p-10 flex flex-col flex-grow">
+                                                <span className="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mb-4 block">{recipe.category}</span>
+                                                <h3 className="text-3xl font-brand text-gray-900 mb-4 group-hover:text-orange-600 transition-colors tracking-tighter leading-tight">{recipe.title}</h3>
+                                                <p className="text-gray-500 text-sm line-clamp-2 mb-8 flex-grow leading-relaxed italic font-medium">"{recipe.description}"</p>
+                                                <div className="flex items-center justify-between mt-auto pt-8 border-t border-orange-50">
+                                                    <div className="flex items-center gap-6 text-gray-400 text-[10px] font-black uppercase tracking-widest">
+                                                        <span className="flex items-center gap-2"><Icon name="Clock" size={16} /> {recipe.time}</span>
+                                                    </div>
+                                                    <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 group-hover:bg-orange-600 group-hover:text-white transition-all shadow-sm">
+                                                        <Icon name="ArrowRight" size={24} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="bg-gray-950 text-gray-400 py-24 px-6 mt-32 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 via-pink-500 to-orange-500"></div>
+                        <div className="max-w-7xl mx-auto text-center space-y-12">
+                            <h2 className="text-white text-6xl font-brand tracking-tighter italic">#RecetasEnUnaPagina</h2>
+                            <div className="space-y-3">
+                                <p className="text-lg font-black uppercase tracking-[0.5em] text-orange-500">Mercedes Recalde</p>
+                                <p className="text-xs uppercase tracking-[0.3em] text-gray-600 font-medium italic">Tecnica Superior en Gastronomía y Docente certificada</p>
+                            </div>
+                            <div className="flex justify-center gap-12 pt-8">
+                                <a href="https://instagram.com/Schoolinarymer" target="_blank" className="flex flex-col items-center gap-4 transition-all hover:text-pink-500 group">
+                                    <InstagramIcon size={36} className="group-hover:scale-125 transition-transform"/><span className="text-[10px] font-black uppercase tracking-widest">Instagram</span>
+                                </a>
+                                <a href="https://twitter.com/MerBakes" target="_blank" className="flex flex-col items-center gap-4 transition-all hover:text-white group">
+                                    <XSocialIcon size={32} className="group-hover:scale-125 transition-transform"/><span className="text-[10px] font-black uppercase tracking-widest">Twitter / X</span>
+                                </a>
+                            </div>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-20 pt-24">© {new Date().getFullYear()} Mercedes Recalde · Schoolinarymer.</p>
+                        </div>
+                    </footer>
+
+                    {/* Modal Detalle */}
+                    {selectedRecipe && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-950/95 backdrop-blur-xl animate-in">
+                            <div className="bg-white w-full max-w-6xl max-h-[92vh] rounded-[4rem] overflow-y-auto relative shadow-2xl border-4 border-white/20">
+                                <button onClick={() => setSelectedRecipe(null)} className="absolute top-10 right-10 z-10 p-4 bg-white/90 hover:bg-orange-500 hover:text-white rounded-full shadow-xl transition-all hover:rotate-90"><Icon name="X" size={32} /></button>
+                                <div className="flex flex-col lg:flex-row h-full">
+                                    <div className="lg:w-1/2 h-96 lg:h-auto"><img src={selectedRecipe.image} className="w-full h-full object-cover" alt={selectedRecipe.title} /></div>
+                                    <div className="lg:w-1/2 p-12 md:p-24 bg-white">
+                                        <div className="mb-14 space-y-6">
+                                            <span className="bg-orange-50 text-orange-600 px-8 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] border border-orange-100">{selectedRecipe.category}</span>
+                                            <h2 className="text-6xl md:text-7xl font-brand text-gray-900 leading-[0.85] tracking-tighter leading-none">{selectedRecipe.title}</h2>
+                                        </div>
+                                        <div className="space-y-16">
+                                            <section className="space-y-8">
+                                                <h4 className="text-2xl font-brand flex items-center gap-5 text-gray-900 uppercase tracking-widest"><div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600"><Icon name="BookOpen" size={24} /></div> Ingredientes</h4>
+                                                <ul className="space-y-4">
+                                                    {selectedRecipe.ingredients.map((ing, idx) => (
+                                                        <li key={idx} className="flex items-center gap-5 text-gray-600 text-xl font-medium p-5 bg-orange-50/40 rounded-3xl border border-orange-50"><div className="w-2.5 h-2.5 bg-orange-400 rounded-full shrink-0" />{ing}</li>
+                                                    ))}
+                                                </ul>
+                                            </section>
+                                            <section className="space-y-8">
+                                                <h4 className="text-2xl font-brand flex items-center gap-5 text-gray-900 uppercase tracking-widest"><div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600"><Icon name="ChefHat" size={24} /></div> Técnica</h4>
+                                                <p className="text-gray-600 leading-relaxed text-xl italic border-l-8 border-orange-200 pl-10 font-medium">{selectedRecipe.instructions}</p>
+                                            </section>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
