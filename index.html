@@ -18,7 +18,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@1,900&display=swap');
@@ -72,8 +72,9 @@
         }
     </style>
     
-    <!-- Netlify Identity Widget -->
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <!-- Cloudflare Web Analytics -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "REEMPLAZAR_CON_TU_TOKEN"}'></script>
+    <!-- Instrucciones: Después del deploy, ir a Cloudflare Dashboard → Web Analytics → Sites → Copiar el token y reemplazarlo arriba -->
 </head>
 <body class="text-gray-800">
     <div id="root"></div>
@@ -159,6 +160,12 @@
             </svg>
         );
 
+        const CafecitoIcon = ({ size = 20, className = "" }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+                <path d="M2 21h18v-2H2m18-2H6V7h14m0-2H4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4m-2.5-6.5a1 1 0 0 1-1 1A1.5 1.5 0 0 1 17 8a1 1 0 0 1 1-1 1.5 1.5 0 0 1 1.5 1.5M5 3h14V1H5z"/>
+            </svg>
+        );
+
         const Icon = ({ name, size = 20, className = "" }) => {
             const iconData = window.lucide ? window.lucide[name] : null;
             if (!iconData) return null;
@@ -238,7 +245,10 @@
                                 </button>
                                 <div className="h-4 w-px bg-orange-200 hidden sm:block"></div>
                                 <a href={data.contact.instagram} target="_blank" className="text-pink-600 hover:scale-110 transition-transform"><InstagramIcon size={20} /></a>
-                                <a href={data.contact.twitter} target="_blank" className="text-black hover:scale-110 transition-transform"><XSocialIcon size={18} /></a>
+                                <a href={data.contact.twitter} target="_blank" className="text-blue-600 hover:text-blue-700 hover:scale-110 transition-transform"><XSocialIcon size={18} /></a>
+                                <button onClick={() => setShowContact(true)} className="text-orange-600 hover:text-orange-700 hover:scale-110 transition-transform" title="Contacto">
+                                    <Icon name="Mail" size={20} />
+                                </button>
                                 <a href="admin.html" className="text-orange-600 hover:scale-110 transition-transform hidden md:block" title="Admin">
                                     <Icon name="Settings" size={22} />
                                 </a>
@@ -425,8 +435,11 @@
                                 <a href={data.contact.instagram} target="_blank" className="flex flex-col items-center gap-3 md:gap-4 transition-all hover:text-pink-500 group">
                                     <InstagramIcon size={28} className="md:w-9 md:h-9 group-hover:scale-125 transition-transform"/><span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Instagram</span>
                                 </a>
-                                <a href={data.contact.twitter} target="_blank" className="flex flex-col items-center gap-3 md:gap-4 transition-all hover:text-white group">
+                                <a href={data.contact.twitter} target="_blank" className="flex flex-col items-center gap-3 md:gap-4 transition-all hover:text-blue-400 text-blue-600 group">
                                     <XSocialIcon size={26} className="md:w-8 md:h-8 group-hover:scale-125 transition-transform"/><span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Twitter / X</span>
+                                </a>
+                                <a href="https://cafecito.app/merbakes" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-3 md:gap-4 transition-all hover:text-orange-600 text-orange-500 group">
+                                    <CafecitoIcon size={28} className="md:w-9 md:h-9 group-hover:scale-125 transition-transform"/><span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Cafecito</span>
                                 </a>
                             </div>
                             <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] opacity-20 pt-12 md:pt-24 px-4">© {new Date().getFullYear()} Mercedes Recalde · Schoolinarymer.</p>
@@ -438,40 +451,72 @@
                         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-950/95 backdrop-blur-xl animate-in">
                             <div className="bg-white w-full max-w-2xl rounded-3xl md:rounded-[4rem] p-6 md:p-16 relative shadow-2xl border-2 md:border-4 border-orange-500 max-h-[90vh] overflow-y-auto">
                                 <button onClick={() => setShowContact(false)} className="absolute top-4 right-4 md:top-8 md:right-8 p-3 md:p-4 bg-orange-50 hover:bg-orange-500 hover:text-white rounded-full transition-all hover:rotate-90">
-                                    <Icon name="X" size={20} className="md:w-6 md:h-6" />
+                                    <Icon name="x" size={20} className="md:w-6 md:h-6" />
                                 </button>
-                                <div className="text-center space-y-6 md:space-y-8">
-                                    <div>
-                                        <h3 className="text-3xl md:text-6xl font-brand text-gray-900 tracking-tighter mb-2 md:mb-4">Comunicate Conmigo</h3>
-                                        <p className="text-gray-500 text-sm md:text-lg italic">¿Tenés consultas o querés compartir tu experiencia?</p>
+                                <div className="space-y-6 md:space-y-8">
+                                    <div className="text-center">
+                                        <h3 className="text-3xl md:text-6xl font-brand text-gray-900 tracking-tighter mb-2 md:mb-4">Contacto</h3>
+                                        <p className="text-gray-500 text-sm md:text-lg italic">Enviame tu consulta y te respondo a la brevedad</p>
                                     </div>
-                                    <div className="space-y-3 md:space-y-4">
-                                        <a href={`mailto:${data.contact.email}`} className="flex items-center gap-3 md:gap-6 bg-orange-50 hover:bg-orange-500 hover:text-white p-4 md:p-8 rounded-2xl md:rounded-3xl transition-all group">
-                                            <div className="w-12 h-12 md:w-16 md:h-16 bg-orange-500 group-hover:bg-white group-hover:text-orange-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white transition-all shrink-0">
-                                                <Icon name="Mail" size={24} className="md:w-8 md:h-8" />
+                                    
+                                    <form action="https://api.web3forms.com/submit" method="POST" className="space-y-4">
+                                        <input type="hidden" name="access_key" value="d1fbc731-2562-480f-bee9-ea8651e00c23" />
+                                        <input type="hidden" name="subject" value="Nuevo mensaje desde RecetasEnUnaPagina" />
+                                        <input type="hidden" name="from_name" value="Formulario RecetasEnUnaPagina" />
+                                        
+                                        <div>
+                                            <label className="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-2">Tu Nombre</label>
+                                            <input 
+                                                type="text" 
+                                                name="name" 
+                                                required 
+                                                className="w-full p-4 border-2 border-orange-100 rounded-2xl focus:outline-none focus:border-orange-500 transition-all"
+                                                placeholder="Ej: María García"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-2">Tu Email</label>
+                                            <input 
+                                                type="email" 
+                                                name="email" 
+                                                required 
+                                                className="w-full p-4 border-2 border-orange-100 rounded-2xl focus:outline-none focus:border-orange-500 transition-all"
+                                                placeholder="tu@email.com"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-2">Mensaje</label>
+                                            <textarea 
+                                                name="message" 
+                                                required 
+                                                rows="5"
+                                                className="w-full p-4 border-2 border-orange-100 rounded-2xl focus:outline-none focus:border-orange-500 transition-all resize-none"
+                                                placeholder="Contame tu consulta..."
+                                            ></textarea>
+                                        </div>
+
+                                        <button 
+                                            type="submit" 
+                                            className="w-full bg-orange-600 hover:bg-orange-700 text-white px-10 py-4 rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest transition-all shadow-lg"
+                                        >
+                                            ✉️ Enviar Mensaje
+                                        </button>
+                                    </form>
+
+                                    <div className="flex justify-center gap-6 pt-6 border-t-2 border-orange-100">
+                                        <a href={data.contact.instagram} target="_blank" className="flex flex-col items-center gap-2 transition-all hover:scale-110 group">
+                                            <div className="w-12 h-12 bg-pink-50 group-hover:bg-pink-500 rounded-full flex items-center justify-center transition-all">
+                                                <InstagramIcon size={24} className="text-pink-600 group-hover:text-white transition-colors" />
                                             </div>
-                                            <div className="text-left flex-grow min-w-0">
-                                                <p className="font-black uppercase tracking-widest text-[8px] md:text-[10px] mb-1">Email</p>
-                                                <p className="text-sm md:text-xl font-bold truncate">{data.contact.email}</p>
-                                            </div>
+                                            <span className="text-xs font-bold text-gray-600">Instagram</span>
                                         </a>
-                                        <a href={data.contact.instagram} target="_blank" className="flex items-center gap-3 md:gap-6 bg-pink-50 hover:bg-pink-500 hover:text-white p-4 md:p-8 rounded-2xl md:rounded-3xl transition-all group">
-                                            <div className="w-12 h-12 md:w-16 md:h-16 bg-pink-500 group-hover:bg-white group-hover:text-pink-500 rounded-xl md:rounded-2xl flex items-center justify-center text-white transition-all shrink-0">
-                                                <InstagramIcon size={24} className="md:w-8 md:h-8" />
+                                        <a href={data.contact.twitter} target="_blank" className="flex flex-col items-center gap-2 transition-all hover:scale-110 group">
+                                            <div className="w-12 h-12 bg-blue-50 group-hover:bg-blue-500 rounded-full flex items-center justify-center transition-all">
+                                                <XSocialIcon size={20} className="text-blue-600 group-hover:text-white transition-colors" />
                                             </div>
-                                            <div className="text-left flex-grow">
-                                                <p className="font-black uppercase tracking-widest text-[8px] md:text-[10px] mb-1">Instagram</p>
-                                                <p className="text-sm md:text-xl font-bold">@Schoolinarymer</p>
-                                            </div>
-                                        </a>
-                                        <a href={data.contact.twitter} target="_blank" className="flex items-center gap-3 md:gap-6 bg-gray-900 hover:bg-black hover:text-white p-4 md:p-8 rounded-2xl md:rounded-3xl transition-all group text-white">
-                                            <div className="w-12 h-12 md:w-16 md:h-16 bg-white text-black rounded-xl md:rounded-2xl flex items-center justify-center transition-all group-hover:bg-gray-900 group-hover:text-white shrink-0">
-                                                <XSocialIcon size={24} className="md:w-8 md:h-8" />
-                                            </div>
-                                            <div className="text-left flex-grow">
-                                                <p className="font-black uppercase tracking-widest text-[8px] md:text-[10px] mb-1">Twitter / X</p>
-                                                <p className="text-sm md:text-xl font-bold">@MerBakes</p>
-                                            </div>
+                                            <span className="text-xs font-bold text-gray-600">Twitter / X</span>
                                         </a>
                                     </div>
                                 </div>
@@ -504,6 +549,23 @@
                                                 <h4 className="text-2xl font-brand flex items-center gap-5 text-gray-900 uppercase tracking-widest"><div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600"><Icon name="ChefHat" size={24} /></div> Técnica</h4>
                                                 <p className="text-gray-600 leading-relaxed text-xl italic border-l-8 border-orange-200 pl-10 font-medium">{selectedRecipe.instructions}</p>
                                             </section>
+                                            
+                                            {/* Cafecito CTA */}
+                                            <section className="pt-8 border-t-2 border-orange-100">
+                                                <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-8 rounded-3xl text-center space-y-4">
+                                                    <p className="text-gray-700 text-lg font-medium italic">¿Te sirvió esta receta?</p>
+                                                    <a 
+                                                        href="https://cafecito.app/merbakes" 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-3 bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest transition-all hover:scale-105 shadow-lg"
+                                                    >
+                                                        <CafecitoIcon size={22} />
+                                                        Invitame un cafecito
+                                                    </a>
+                                                    <p className="text-gray-500 text-xs">Mi contenido es gratuito ☕</p>
+                                                </div>
+                                            </section>
                                         </div>
                                     </div>
                                 </div>
@@ -519,22 +581,18 @@
     </script>
     
     <script>
+        // Inicializar Lucide icons
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+    
+    <script>
         // Register Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js')
                 .then(reg => console.log('✅ Service Worker registrado'))
                 .catch(err => console.log('❌ Error SW:', err));
-        }
-        
-        // Netlify Identity redirect handler
-        if (window.netlifyIdentity) {
-            window.netlifyIdentity.on("init", user => {
-                if (!user) {
-                    window.netlifyIdentity.on("login", () => {
-                        document.location.href = "/admin.html";
-                    });
-                }
-            });
         }
     </script>
 </body>
