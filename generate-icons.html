@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Iconos - #RecetasEnUnaPagina</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fffaf5 0%, #fff5eb 100%);
+            padding: 2rem;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(234, 88, 12, 0.15);
+            max-width: 900px;
+            text-align: center;
+            border: 3px solid #fb923c;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+        .subtitle {
+            color: #ea580c;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 2rem;
+        }
+        .icons-container {
+            display: flex;
+            gap: 3rem;
+            justify-content: center;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+        .icon-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        canvas {
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: 4px solid #fb923c;
+        }
+        button {
+            background: #ea580c;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(234, 88, 12, 0.3);
+        }
+        button:hover {
+            background: #c2410c;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(234, 88, 12, 0.4);
+        }
+        .instructions {
+            text-align: left;
+            background: #fff7ed;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-top: 3rem;
+            border: 2px solid #fb923c;
+        }
+        .instructions h2 {
+            margin-top: 0;
+            color: #ea580c;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+        .instructions ol {
+            padding-left: 1.5rem;
+            color: #4b5563;
+            line-height: 1.8;
+        }
+        .instructions li {
+            margin-bottom: 0.8rem;
+        }
+        code {
+            background: #fef3c7;
+            padding: 0.2rem 0.5rem;
+            border-radius: 5px;
+            font-family: monospace;
+            color: #92400e;
+        }
+        .tip {
+            background: #dbeafe;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>#RecetasEnUnaPagina</h1>
+        <p class="subtitle">Generador de Iconos PWA</p>
+        <p>Estos son los iconos para tu aplicación. ¡Descargalos y usálos!</p>
+        
+        <div class="icons-container">
+            <div class="icon-wrapper">
+                <canvas id="icon192" width="192" height="192"></canvas>
+                <button onclick="downloadIcon('icon192', 'icon-192.png')">⬇ Descargar 192x192</button>
+            </div>
+            <div class="icon-wrapper">
+                <canvas id="icon512" width="512" height="512"></canvas>
+                <button onclick="downloadIcon('icon512', 'icon-512.png')">⬇ Descargar 512x512</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h2>📝 Instrucciones</h2>
+            <ol>
+                <li>Descargá ambos iconos usando los botones de arriba</li>
+                <li>Guardá los archivos como <code>icon-192.png</code> y <code>icon-512.png</code></li>
+                <li>Subí estos archivos a la raíz de tu proyecto en Netlify (misma carpeta que index.html)</li>
+                <li>¡Listo! Tu PWA ahora tiene iconos y se puede instalar</li>
+            </ol>
+            
+            <div class="tip">
+                <strong>💡 Tip:</strong> Para crear iconos personalizados más adelante, podés usar <a href="https://www.canva.com" target="_blank" style="color: #3b82f6; font-weight: bold;">Canva</a> y crear un diseño de 512x512px con tus colores (#ea580c, #fb923c) y el hashtag #RecetasEnUnaPagina
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function drawIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            
+            // Background gradient - Orange tones
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#fb923c');
+            gradient.addColorStop(1, '#ea580c');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // White text
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Main text: #Recetas
+            ctx.font = `900 ${size * 0.18}px Inter, Arial, sans-serif`;
+            ctx.fillText('#Recetas', size / 2, size / 2 - size * 0.08);
+            
+            // Secondary text: EnUna
+            ctx.font = `900 ${size * 0.13}px Inter, Arial, sans-serif`;
+            ctx.fillText('EnUna', size / 2, size / 2 + size * 0.05);
+            
+            // Accent text: Pagina (in orange outline)
+            ctx.font = `900 italic ${size * 0.13}px Georgia, serif`;
+            ctx.fillText('Pagina', size / 2, size / 2 + size * 0.18);
+            
+            // Decorative circle
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = size * 0.015;
+            ctx.beginPath();
+            ctx.arc(size / 2, size / 2, size * 0.42, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Draw icons on load
+        window.onload = () => {
+            drawIcon('icon192', 192);
+            drawIcon('icon512', 512);
+        };
+    </script>
+</body>
+</html>

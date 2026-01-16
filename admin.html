@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - #RecetasEnUnaPagina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    
+    <!-- Netlify Identity Widget -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@1,900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #fffaf5; }
+        .font-brand { font-family: 'Inter', sans-serif; font-weight: 900; }
+    </style>
+</head>
+<body class="text-gray-800">
+    <!-- Auth Protection -->
+    <script>
+        // Verificar autenticación al cargar
+        const user = netlifyIdentity.currentUser();
+        
+        if (!user) {
+            // No está logueado, mostrar login
+            netlifyIdentity.open();
+            
+            // Redirigir a home si cierra el modal sin loguearse
+            netlifyIdentity.on('close', () => {
+                const currentUser = netlifyIdentity.currentUser();
+                if (!currentUser) {
+                    window.location.href = '/';
+                }
+            });
+        }
+        
+        // Después del login, recargar
+        netlifyIdentity.on('login', user => {
+            location.reload();
+        });
+        
+        // Función para logout
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                netlifyIdentity.logout();
+                window.location.href = '/';
+            }
+        }
+    </script>
+    
+    <div class="min-h-screen p-8">
+        <!-- Header -->
+        <header class="max-w-7xl mx-auto mb-12">
+            <div class="bg-white rounded-[3rem] p-8 shadow-xl border-4 border-orange-500 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h1 class="text-5xl font-brand text-gray-900 tracking-tighter mb-2">Panel Admin</h1>
+                    <p class="text-orange-600 text-sm font-bold uppercase tracking-widest">#RecetasEnUnaPagina</p>
+                </div>
+                <div class="flex gap-3">
+                    <a href="index.html" class="bg-orange-600 text-white px-8 py-4 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-orange-700 transition-all shadow-lg">
+                        ← Ver Sitio
+                    </a>
+                    <button onclick="logout()" class="bg-red-500 text-white px-8 py-4 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-red-600 transition-all shadow-lg">
+                        🔒 Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto space-y-8">
+            <!-- Messages -->
+            <div id="message" class="hidden p-6 rounded-3xl shadow-lg"></div>
+
+            <!-- Bio Section -->
+            <section class="bg-white rounded-[3rem] p-12 shadow-xl">
+                <h2 class="text-4xl font-brand text-gray-900 tracking-tighter mb-8 flex items-center gap-4">
+                    <span class="bg-orange-100 p-3 rounded-2xl text-orange-600">✏️</span>
+                    Editar Bio
+                </h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-3">Título Principal</label>
+                        <input type="text" id="bio-title" class="w-full p-4 border-2 border-orange-100 rounded-2xl focus:outline-none focus:border-orange-500 transition-all" placeholder="Ej: Mucho más que una receta.">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-3">Contenido</label>
+                        <textarea id="bio-content" rows="8" class="w-full p-4 border-2 border-orange-100 rounded-2xl focus:outline-none focus:border-orange-500 transition-all" placeholder="Tu biografía..."></textarea>
+                        <p class="text-xs text-gray-400 mt-2 italic">Tip: Usá doble Enter para separar párrafos</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-3">Foto de Perfil</label>
+                        <input type="file" id="bio-photo" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 file:uppercase file:tracking-widest">
+                        <img id="bio-photo-preview" class="mt-4 max-w-sm rounded-3xl shadow-lg hidden">
+                    </div>
+                    <button onclick="saveBio()" class="bg-orange-600 text-white px-10 py-4 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-orange-700 transition-all shadow-lg">
+                        Guardar Bio
+                    </button>
+                </div>
+            </section>
+
+            <!-- Recipes Section -->
+            <section class="bg-white rounded-[3rem] p-12 shadow-xl">
+                <h2 class="text-4xl font-brand text-gray-900 tracking-tighter mb-8 flex items-center gap-4">
+                    <span class="bg-orange-100 p-3 rounded-2xl text-orange-600">🍰</span>
+                    Gestionar Recetas
+                </h2>
+                
+                <div class="mb-8 p-8 bg-orange-50 rounded-3xl border-2 border-orange-100">
+                    <h3 class="text-2xl font-brand mb-6 text-gray-900">Nueva Receta</h3>
+                    <div class="space-y-4">
+                        <input type="text" id="recipe-title" class="w-full p-4 border-2 border-orange-200 rounded-2xl focus:outline-none focus:border-orange-500 bg-white" placeholder="Título">
+                        <select id="recipe-category" class="w-full p-4 border-2 border-orange-200 rounded-2xl focus:outline-none focus:border-orange-500 bg-white">
+                            <option>Pastelería</option>
+                            <option>Pastelería sin gluten y vegana</option>
+                            <option>Panadería</option>
+                            <option>Cocina salada</option>
+                        </select>
+                        <input type="text" id="recipe-description" class="w-full p-4 border-2 border-orange-200 rounded-2xl focus:outline-none focus:border-orange-500 bg-white" placeholder="Descripción breve">
+                        <textarea id="recipe-ingredients" rows="4" class="w-full p-4 border-2 border-orange-200 rounded-2xl focus:outline-none focus:border-orange-500 bg-white" placeholder="Ingredientes (uno por línea)"></textarea>
+                        <textarea id="recipe-instructions" rows="4" class="w-full p-4 border-2 border-orange-200 rounded-2xl focus:outline-none focus:border-orange-500 bg-white" placeholder="Instrucciones"></textarea>
+                        <input type="text" id="recipe-time" class="w-full p-4 border-2 border-orange-200 rounded-2xl focus:outline-none focus:border-orange-500 bg-white" placeholder="Tiempo (ej: 30 min)">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-600 mb-2">Foto de la receta</label>
+                            <input type="file" id="recipe-image" accept="image/*" class="block w-full text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-600 mb-2">Foto de Portada (para redes sociales) 📱</label>
+                            <input type="file" id="recipe-cover" accept="image/*" class="block w-full text-sm">
+                            <p class="text-xs text-gray-400 mt-1 italic">Esta imagen se mostrará en "Últimos Lanzamientos"</p>
+                        </div>
+                        <button onclick="addRecipe()" class="bg-orange-600 text-white px-8 py-3 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-orange-700 transition-all">
+                            Agregar Receta
+                        </button>
+                    </div>
+                </div>
+
+                <div id="recipes-list" class="space-y-4"></div>
+            </section>
+
+            <!-- Newsletter Section -->
+            <section class="bg-white rounded-[3rem] p-12 shadow-xl">
+                <h2 class="text-4xl font-brand text-gray-900 tracking-tighter mb-8 flex items-center gap-4">
+                    <span class="bg-orange-100 p-3 rounded-2xl text-orange-600">📧</span>
+                    Gestionar Newsletters
+                </h2>
+                
+                <div class="mb-8 p-8 bg-pink-50 rounded-3xl border-2 border-pink-100">
+                    <h3 class="text-2xl font-brand mb-6 text-gray-900">Nuevo Newsletter</h3>
+                    <div class="space-y-4">
+                        <input type="text" id="newsletter-title" class="w-full p-4 border-2 border-pink-200 rounded-2xl focus:outline-none focus:border-pink-500 bg-white" placeholder="Título">
+                        <textarea id="newsletter-description" rows="3" class="w-full p-4 border-2 border-pink-200 rounded-2xl focus:outline-none focus:border-pink-500 bg-white" placeholder="Descripción"></textarea>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-600 mb-2">Foto de Portada (para redes) 📱</label>
+                            <input type="file" id="newsletter-cover" accept="image/*" class="block w-full text-sm">
+                        </div>
+                        <button onclick="addNewsletter()" class="bg-pink-600 text-white px-8 py-3 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-pink-700 transition-all">
+                            Agregar Newsletter
+                        </button>
+                    </div>
+                </div>
+
+                <div id="newsletters-list" class="space-y-4"></div>
+            </section>
+
+            <!-- Gallery Section -->
+            <section class="bg-white rounded-[3rem] p-12 shadow-xl">
+                <h2 class="text-4xl font-brand text-gray-900 tracking-tighter mb-8 flex items-center gap-4">
+                    <span class="bg-orange-100 p-3 rounded-2xl text-orange-600">📸</span>
+                    Gestionar Galería
+                </h2>
+                
+                <div class="mb-8 p-8 bg-purple-50 rounded-3xl border-2 border-purple-100">
+                    <h3 class="text-2xl font-brand mb-6 text-gray-900">Agregar Foto</h3>
+                    <div class="space-y-4">
+                        <input type="file" id="gallery-photo" accept="image/*" class="block w-full text-sm">
+                        <button onclick="addGalleryPhoto()" class="bg-purple-600 text-white px-8 py-3 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-purple-700 transition-all">
+                            Agregar a Galería
+                        </button>
+                    </div>
+                </div>
+
+                <div id="gallery-list" class="grid grid-cols-4 gap-4"></div>
+            </section>
+
+            <!-- Data Management -->
+            <section class="bg-white rounded-[3rem] p-12 shadow-xl">
+                <h2 class="text-4xl font-brand text-gray-900 tracking-tighter mb-8 flex items-center gap-4">
+                    <span class="bg-orange-100 p-3 rounded-2xl text-orange-600">💾</span>
+                    Backup de Datos
+                </h2>
+                <div class="flex gap-4">
+                    <button onclick="exportData()" class="bg-green-600 text-white px-8 py-4 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-green-700 transition-all">
+                        📥 Exportar Backup
+                    </button>
+                    <div>
+                        <input type="file" id="import-file" accept=".json" class="hidden" onchange="importData(event)">
+                        <button onclick="document.getElementById('import-file').click()" class="bg-blue-600 text-white px-8 py-4 rounded-3xl font-black uppercase text-xs tracking-widest hover:bg-blue-700 transition-all">
+                            📤 Importar Backup
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const DB_KEY = 'recetasenunpagina_data';
+        
+        const getData = () => JSON.parse(localStorage.getItem(DB_KEY));
+        const saveData = (data) => localStorage.setItem(DB_KEY, JSON.stringify(data));
+        
+        const showMessage = (text, type = 'success') => {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `p-6 rounded-3xl shadow-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        };
+
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        // Load initial data
+        function loadData() {
+            const data = getData();
+            
+            // Bio
+            document.getElementById('bio-title').value = data.bio.title || '';
+            document.getElementById('bio-content').value = data.bio.content || '';
+            if (data.bio.photo) {
+                document.getElementById('bio-photo-preview').src = data.bio.photo;
+                document.getElementById('bio-photo-preview').classList.remove('hidden');
+            }
+
+            // Recipes
+            const recipesList = document.getElementById('recipes-list');
+            recipesList.innerHTML = data.recipes.map(r => `
+                <div class="flex justify-between items-center p-6 bg-orange-50 rounded-3xl border border-orange-100">
+                    <div>
+                        <h4 class="font-bold text-gray-900">${r.title}</h4>
+                        <p class="text-sm text-gray-500">${r.category} · ${r.time}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        ${r.coverImage ? `<button onclick="downloadCover('${r.coverImage}', '${r.title}')" class="bg-green-500 text-white px-4 py-2 rounded-2xl text-xs font-bold">Descargar Portada</button>` : ''}
+                        <button onclick="deleteRecipe(${r.id})" class="bg-red-500 text-white px-4 py-2 rounded-2xl text-xs font-bold">Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Newsletters
+            const newslettersList = document.getElementById('newsletters-list');
+            newslettersList.innerHTML = data.newsletters.map(n => `
+                <div class="flex justify-between items-center p-6 bg-pink-50 rounded-3xl border border-pink-100">
+                    <div>
+                        <h4 class="font-bold text-gray-900">${n.title}</h4>
+                        <p class="text-sm text-gray-500">${new Date(n.date).toLocaleDateString('es-AR')}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        ${n.coverImage ? `<button onclick="downloadCover('${n.coverImage}', '${n.title}')" class="bg-green-500 text-white px-4 py-2 rounded-2xl text-xs font-bold">Descargar Portada</button>` : ''}
+                        <button onclick="deleteNewsletter(${n.id})" class="bg-red-500 text-white px-4 py-2 rounded-2xl text-xs font-bold">Eliminar</button>
+                    </div>
+                </div>
+            `).join('');
+
+            // Gallery
+            const galleryList = document.getElementById('gallery-list');
+            galleryList.innerHTML = data.galleryPhotos.map((photo, idx) => `
+                <div class="relative group">
+                    <img src="${photo}" class="w-full aspect-square object-cover rounded-3xl shadow-lg">
+                    <button onclick="deleteGalleryPhoto(${idx})" class="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                        ✕
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function saveBio() {
+            const data = getData();
+            data.bio.title = document.getElementById('bio-title').value;
+            data.bio.content = document.getElementById('bio-content').value;
+            
+            const photoFile = document.getElementById('bio-photo').files[0];
+            if (photoFile) {
+                data.bio.photo = await fileToBase64(photoFile);
+            }
+            
+            saveData(data);
+            showMessage('✅ Bio actualizada!');
+            loadData();
+        }
+
+        async function addRecipe() {
+            const data = getData();
+            const imageFile = document.getElementById('recipe-image').files[0];
+            const coverFile = document.getElementById('recipe-cover').files[0];
+            
+            if (!imageFile) {
+                showMessage('⚠️ Falta la imagen', 'error');
+                return;
+            }
+
+            const recipe = {
+                id: Date.now(),
+                title: document.getElementById('recipe-title').value,
+                category: document.getElementById('recipe-category').value,
+                description: document.getElementById('recipe-description').value,
+                ingredients: document.getElementById('recipe-ingredients').value.split('\n').filter(i => i.trim()),
+                instructions: document.getElementById('recipe-instructions').value,
+                time: document.getElementById('recipe-time').value,
+                image: await fileToBase64(imageFile),
+                coverImage: coverFile ? await fileToBase64(coverFile) : await fileToBase64(imageFile),
+                date: new Date().toISOString()
+            };
+
+            data.recipes.unshift(recipe);
+            saveData(data);
+            showMessage('✅ Receta agregada!');
+            
+            // Clear form
+            ['recipe-title', 'recipe-description', 'recipe-ingredients', 'recipe-instructions', 'recipe-time'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('recipe-image').value = '';
+            document.getElementById('recipe-cover').value = '';
+            
+            loadData();
+        }
+
+        async function addNewsletter() {
+            const data = getData();
+            const coverFile = document.getElementById('newsletter-cover').files[0];
+            
+            if (!coverFile) {
+                showMessage('⚠️ Falta la imagen de portada', 'error');
+                return;
+            }
+
+            const newsletter = {
+                id: Date.now(),
+                title: document.getElementById('newsletter-title').value,
+                description: document.getElementById('newsletter-description').value,
+                coverImage: await fileToBase64(coverFile),
+                image: await fileToBase64(coverFile),
+                date: new Date().toISOString()
+            };
+
+            data.newsletters.unshift(newsletter);
+            saveData(data);
+            showMessage('✅ Newsletter agregado!');
+            
+            document.getElementById('newsletter-title').value = '';
+            document.getElementById('newsletter-description').value = '';
+            document.getElementById('newsletter-cover').value = '';
+            
+            loadData();
+        }
+
+        async function addGalleryPhoto() {
+            const data = getData();
+            const file = document.getElementById('gallery-photo').files[0];
+            
+            if (!file) {
+                showMessage('⚠️ Seleccioná una foto', 'error');
+                return;
+            }
+
+            const photo = await fileToBase64(file);
+            data.galleryPhotos.unshift(photo);
+            saveData(data);
+            showMessage('✅ Foto agregada a la galería!');
+            
+            document.getElementById('gallery-photo').value = '';
+            loadData();
+        }
+
+        function deleteRecipe(id) {
+            if (confirm('¿Eliminar esta receta?')) {
+                const data = getData();
+                data.recipes = data.recipes.filter(r => r.id !== id);
+                saveData(data);
+                showMessage('✅ Receta eliminada');
+                loadData();
+            }
+        }
+
+        function deleteNewsletter(id) {
+            if (confirm('¿Eliminar este newsletter?')) {
+                const data = getData();
+                data.newsletters = data.newsletters.filter(n => n.id !== id);
+                saveData(data);
+                showMessage('✅ Newsletter eliminado');
+                loadData();
+            }
+        }
+
+        function deleteGalleryPhoto(idx) {
+            if (confirm('¿Eliminar esta foto?')) {
+                const data = getData();
+                data.galleryPhotos.splice(idx, 1);
+                saveData(data);
+                showMessage('✅ Foto eliminada');
+                loadData();
+            }
+        }
+
+        function downloadCover(base64, title) {
+            const link = document.createElement('a');
+            link.href = base64;
+            link.download = `${title.replace(/\s+/g, '-')}-portada.png`;
+            link.click();
+            showMessage('📥 ¡Portada descargada! Lista para compartir en redes');
+        }
+
+        function exportData() {
+            const data = getData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `recetasenunpagina-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            showMessage('📥 Backup exportado!');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    saveData(data);
+                    showMessage('📤 Backup importado! Recargando...');
+                    setTimeout(() => location.reload(), 1500);
+                } catch (err) {
+                    showMessage('❌ Error al importar', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Preview photo
+        document.getElementById('bio-photo').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const preview = document.getElementById('bio-photo-preview');
+                preview.src = await fileToBase64(file);
+                preview.classList.remove('hidden');
+            }
+        });
+
+        // Load on start
+        loadData();
+    </script>
+</body>
+</html>
