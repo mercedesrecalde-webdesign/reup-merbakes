@@ -1,16 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>#RecetasEnUnaPagina - Mercedes Recalde</title>
     <meta name="description" content="Tu acceso directo a la cocina sin secretos y paso a paso">
     <meta name="theme-color" content="#ea580c">
-    
+
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & Babel -->
@@ -19,32 +20,57 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Playfair+Display:ital,wght@1,900&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #fffaf5; 
-        }
-        
-        .font-brand { font-family: 'Inter', sans-serif; font-weight: 900; }
-        .font-serif-italic { font-family: 'Playfair Display', serif; font-style: italic; font-weight: 900; }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fffaf5;
         }
-        .animate-in { animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-        
+
+        .font-brand {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+        }
+
+        .font-serif-italic {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-weight: 900;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
         /* Efecto de Blanco y Negro a Color */
         .photo-hover-effect {
             filter: grayscale(100%);
             transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .photo-hover-effect:hover {
             filter: grayscale(0%);
             transform: scale(1.03);
@@ -68,23 +94,26 @@
         }
 
         .text-pagina {
-            color: #ea580c; /* Color naranja para Pagina */
+            color: #ea580c;
+            /* Color naranja para Pagina */
         }
     </style>
-    
+
     <!-- Cloudflare Web Analytics -->
-    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "REEMPLAZAR_CON_TU_TOKEN"}'></script>
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "REEMPLAZAR_CON_TU_TOKEN"}'></script>
     <!-- Instrucciones: Después del deploy, ir a Cloudflare Dashboard → Web Analytics → Sites → Copiar el token y reemplazarlo arriba -->
 </head>
+
 <body class="text-gray-800">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useMemo, useEffect } = React;
-        
+
         // --- DATABASE ---
         const DB_KEY = 'recetasenunpagina_data';
-        
+
         const initDB = () => {
             if (!localStorage.getItem(DB_KEY)) {
                 const defaultData = {
@@ -138,13 +167,13 @@
                 localStorage.setItem(DB_KEY, JSON.stringify(defaultData));
             }
         };
-        
+
         const getData = () => JSON.parse(localStorage.getItem(DB_KEY));
         const saveData = (data) => localStorage.setItem(DB_KEY, JSON.stringify(data));
-        
+
         // Inicializar DB
         initDB();
-        
+
         // --- COMPONENTES DE ICONOS ---
         const XSocialIcon = ({ size = 20, className = "" }) => (
             <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -162,29 +191,42 @@
 
         const CafecitoIcon = ({ size = 20, className = "" }) => (
             <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-                <path d="M2 21h18v-2H2m18-2H6V7h14m0-2H4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4m-2.5-6.5a1 1 0 0 1-1 1A1.5 1.5 0 0 1 17 8a1 1 0 0 1 1-1 1.5 1.5 0 0 1 1.5 1.5M5 3h14V1H5z"/>
+                <path d="M2 21h18v-2H2m18-2H6V7h14m0-2H4v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4m-2.5-6.5a1 1 0 0 1-1 1A1.5 1.5 0 0 1 17 8a1 1 0 0 1 1-1 1.5 1.5 0 0 1 1.5 1.5M5 3h14V1H5z" />
             </svg>
         );
 
         const Icon = ({ name, size = 20, className = "" }) => {
-            const iconData = window.lucide ? window.lucide[name] : null;
-            if (!iconData) return null;
-            const [tagName, attributes, children] = iconData;
-            return (
-                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                    {children.map((child, index) => {
-                        const [childTag, childAttrs] = child;
-                        return React.createElement(childTag, { ...childAttrs, key: index });
-                    })}
-                </svg>
-            );
+            const iconRef = React.useRef(null);
+
+            React.useEffect(() => {
+                if (iconRef.current && window.lucide) {
+                    // Limpiar el contenedor
+                    iconRef.current.innerHTML = '';
+                    // Crear el icono usando Lucide
+                    const iconName = name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
+                    iconRef.current.innerHTML = `<i data-lucide="${iconName}"></i>`;
+                    window.lucide.createIcons({ nodes: [iconRef.current] });
+
+                    // Aplicar estilos al SVG generado
+                    const svg = iconRef.current.querySelector('svg');
+                    if (svg) {
+                        svg.setAttribute('width', size);
+                        svg.setAttribute('height', size);
+                        if (className) {
+                            className.split(' ').forEach(cls => svg.classList.add(cls));
+                        }
+                    }
+                }
+            }, [name, size, className]);
+
+            return <span ref={iconRef} className="inline-flex items-center justify-center" style={{ width: size, height: size }}></span>;
         };
 
         const CATEGORIES = ["Todos", "Pastelería", "Pastelería sin gluten y vegana", "Panadería", "Cocina salada", "Newsletters"];
 
         function App() {
             const [data, setData] = useState(getData());
-            const [view, setView] = useState("recipes"); 
+            const [view, setView] = useState("recipes");
             const [activeCategory, setActiveCategory] = useState("Todos");
             const [searchQuery, setSearchQuery] = useState("");
             const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -217,9 +259,9 @@
                     {/* Navbar */}
                     <header className="bg-white/80 backdrop-blur-md border-b border-orange-100 sticky top-0 z-50 shadow-sm">
                         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                            <div 
+                            <div
                                 className="flex items-center gap-2 md:gap-3 cursor-pointer group"
-                                onClick={() => { setView("recipes"); setSelectedRecipe(null); window.scrollTo(0,0); }}
+                                onClick={() => { setView("recipes"); setSelectedRecipe(null); window.scrollTo(0, 0); }}
                             >
                                 <div className="bg-orange-600 p-1.5 md:p-2 rounded-xl text-white shadow-lg shadow-orange-200">
                                     <Icon name="ChefHat" size={20} className="md:w-6 md:h-6" />
@@ -229,15 +271,15 @@
                                     <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest text-orange-600">Mercedes Recalde</span>
                                 </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-2 md:gap-4">
-                                <button 
-                                    onClick={() => { setView("about"); window.scrollTo(0,0); }}
+                                <button
+                                    onClick={() => { setView("about"); window.scrollTo(0, 0); }}
                                     className={`px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${view === "about" ? "bg-orange-600 text-white shadow-lg" : "bg-orange-50 text-orange-600 hover:bg-orange-100 border border-orange-200"}`}
                                 >
                                     Sobre Mí
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => setShowContact(true)}
                                     className="px-4 md:px-6 py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all bg-pink-50 text-pink-600 hover:bg-pink-600 hover:text-white border border-pink-200"
                                 >
@@ -268,7 +310,7 @@
                                         </div>
                                         <div className="space-y-4 md:space-y-6 text-gray-600 text-sm md:text-base lg:text-lg leading-relaxed border-l-4 md:border-l-8 border-orange-500 pl-4 md:pl-8 font-medium">
                                             {data.bio.content.split('\n\n').map((p, i) => (
-                                                <p key={i} dangerouslySetInnerHTML={{__html: p.replace(/@(\w+)/g, '<strong>@$1</strong>')}}></p>
+                                                <p key={i} dangerouslySetInnerHTML={{ __html: p.replace(/@(\w+)/g, '<strong>@$1</strong>') }}></p>
                                             ))}
                                         </div>
                                         <button onClick={() => setView("recipes")} className="bg-orange-600 text-white px-6 md:px-10 py-4 md:py-5 rounded-2xl md:rounded-3xl font-black uppercase tracking-widest text-[10px] md:text-xs hover:bg-orange-700 transition-all shadow-xl flex items-center gap-2 md:gap-3 group">
@@ -312,10 +354,10 @@
                                     <div className="inline-block px-4 md:px-6 py-2 bg-orange-100 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-orange-600 mb-2 md:mb-4 shadow-sm border border-orange-200">
                                         Biblioteca Culinaria Digital
                                     </div>
-                                    
+
                                     <div className="logo-container">
                                         <h2 className="text-5xl md:text-7xl lg:text-[12rem] font-brand text-gray-900 leading-[0.75] tracking-tighter mb-6 md:mb-10">
-                                            #Recetas<br/>
+                                            #Recetas<br />
                                             <span className="text-stroke">EnUna</span>
                                             <span className="font-serif-italic text-pagina">
                                                 Pagina
@@ -324,7 +366,7 @@
                                     </div>
 
                                     <p className="text-lg md:text-xl lg:text-3xl text-gray-600 max-w-3xl mx-auto font-bold leading-relaxed tracking-tight px-4">
-                                        Tu acceso directo a la cocina <br className="hidden md:block"/> 
+                                        Tu acceso directo a la cocina <br className="hidden md:block" />
                                         <span className="text-orange-600">sin secretos y paso a paso.</span>
                                     </p>
                                     <div className="text-[10px] md:text-xs uppercase tracking-[0.2em] md:tracking-[0.3em] text-gray-400 font-bold px-4">
@@ -365,8 +407,8 @@
                                         <div className="absolute left-6 md:left-8 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within:text-orange-500 transition-colors">
                                             <Icon name="Search" size={20} className="md:w-8 md:h-8" />
                                         </div>
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             placeholder="¿Qué receta buscás?"
                                             className="w-full pl-14 md:pl-20 pr-6 md:pr-10 py-4 md:py-7 rounded-full border-2 border-orange-100 focus:outline-none focus:ring-4 md:focus:ring-[12px] focus:ring-orange-500/5 focus:border-orange-300 bg-white shadow-xl md:shadow-2xl transition-all font-medium text-base md:text-xl placeholder:text-gray-300"
                                             value={searchQuery}
@@ -379,11 +421,10 @@
                                             <button
                                                 key={cat}
                                                 onClick={() => setActiveCategory(cat)}
-                                                className={`px-4 md:px-8 py-2.5 md:py-3.5 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-wider md:tracking-widest transition-all shadow-md ${
-                                                    activeCategory === cat 
-                                                    ? "bg-orange-600 text-white shadow-orange-200 scale-105 md:scale-110" 
+                                                className={`px-4 md:px-8 py-2.5 md:py-3.5 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-wider md:tracking-widest transition-all shadow-md ${activeCategory === cat
+                                                    ? "bg-orange-600 text-white shadow-orange-200 scale-105 md:scale-110"
                                                     : "bg-white text-gray-400 border border-orange-100 hover:bg-orange-50 hover:text-orange-700"
-                                                }`}
+                                                    }`}
                                             >
                                                 {cat}
                                             </button>
@@ -394,7 +435,7 @@
                                 {/* Rejilla */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-12 px-4">
                                     {filteredRecipes.map(recipe => (
-                                        <article 
+                                        <article
                                             key={recipe.id}
                                             onClick={() => setSelectedRecipe(recipe)}
                                             className="bg-white rounded-2xl md:rounded-[3.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer group border border-orange-50 flex flex-col h-full"
@@ -433,93 +474,88 @@
                             </div>
                             <div className="flex justify-center gap-8 md:gap-12 pt-6 md:pt-8">
                                 <a href={data.contact.instagram} target="_blank" className="flex flex-col items-center gap-3 md:gap-4 transition-all hover:text-pink-500 group">
-                                    <InstagramIcon size={28} className="md:w-9 md:h-9 group-hover:scale-125 transition-transform"/><span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Instagram</span>
+                                    <InstagramIcon size={28} className="md:w-9 md:h-9 group-hover:scale-125 transition-transform" /><span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Instagram</span>
                                 </a>
                                 <a href={data.contact.twitter} target="_blank" className="flex flex-col items-center gap-3 md:gap-4 transition-all hover:text-blue-400 text-blue-600 group">
-                                    <XSocialIcon size={26} className="md:w-8 md:h-8 group-hover:scale-125 transition-transform"/><span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Twitter / X</span>
-                                </a>
-                                <a href="https://cafecito.app/merbakes" target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-3 md:gap-4 transition-all hover:text-orange-600 text-orange-500 group">
-                                    <CafecitoIcon size={28} className="md:w-9 md:h-9 group-hover:scale-125 transition-transform"/><span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Cafecito</span>
+                                    <XSocialIcon size={26} className="md:w-8 md:h-8 group-hover:scale-125 transition-transform" /><span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest">Twitter / X</span>
                                 </a>
                             </div>
-                            <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] opacity-20 pt-12 md:pt-24 px-4">© {new Date().getFullYear()} Mercedes Recalde · Schoolinarymer.</p>
+
+                            {/* Bloque Cafecito - Editorial */}
+                            <div className="pt-12 md:pt-16 space-y-4 text-center max-w-md mx-auto">
+                                <p className="text-gray-500 text-xs md:text-sm leading-relaxed">
+                                    Este sitio es gratuito y lo seguirá siendo.<br />
+                                    Si creés que este contenido es valioso y querés ayudarme a seguir creciendo, podés invitarme un cafecito.
+                                </p>
+                                <a
+                                    href="https://cafecito.app/MerBakes"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 text-xs font-medium transition-colors"
+                                >
+                                    <CafecitoIcon size={16} />
+                                    Invitar un cafecito →
+                                </a>
+                            </div>
+
+                            <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] opacity-20 pt-8 md:pt-12 px-4">© {new Date().getFullYear()} Mercedes Recalde · Schoolinarymer.</p>
                         </div>
                     </footer>
 
                     {/* Modal Contacto */}
                     {showContact && (
                         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-gray-950/95 backdrop-blur-xl animate-in">
-                            <div className="bg-white w-full max-w-2xl rounded-3xl md:rounded-[4rem] p-6 md:p-16 relative shadow-2xl border-2 md:border-4 border-orange-500 max-h-[90vh] overflow-y-auto">
-                                <button onClick={() => setShowContact(false)} className="absolute top-4 right-4 md:top-8 md:right-8 p-3 md:p-4 bg-orange-50 hover:bg-orange-500 hover:text-white rounded-full transition-all hover:rotate-90">
-                                    <Icon name="x" size={20} className="md:w-6 md:h-6" />
+                            <div className="bg-white w-full max-w-xl rounded-[3rem] p-8 md:p-14 relative shadow-2xl border-4 border-orange-500">
+
+                                <button
+                                    onClick={() => setShowContact(false)}
+                                    className="absolute top-6 right-6 p-3 bg-orange-50 hover:bg-orange-500 hover:text-white rounded-full transition-all hover:rotate-90"
+                                >
+                                    <Icon name="X" size={20} />
                                 </button>
-                                <div className="space-y-6 md:space-y-8">
-                                    <div className="text-center">
-                                        <h3 className="text-3xl md:text-6xl font-brand text-gray-900 tracking-tighter mb-2 md:mb-4">Contacto</h3>
-                                        <p className="text-gray-500 text-sm md:text-lg italic">Enviame tu consulta y te respondo a la brevedad</p>
-                                    </div>
-                                    
-                                    <form action="https://api.web3forms.com/submit" method="POST" className="space-y-4">
-                                        <input type="hidden" name="access_key" value="d1fbc731-2562-480f-bee9-ea8651e00c23" />
-                                        <input type="hidden" name="subject" value="Nuevo mensaje desde RecetasEnUnaPagina" />
-                                        <input type="hidden" name="from_name" value="Formulario RecetasEnUnaPagina" />
-                                        
-                                        <div>
-                                            <label className="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-2">Tu Nombre</label>
-                                            <input 
-                                                type="text" 
-                                                name="name" 
-                                                required 
-                                                className="w-full p-4 border-2 border-orange-100 rounded-2xl focus:outline-none focus:border-orange-500 transition-all"
-                                                placeholder="Ej: María García"
-                                            />
-                                        </div>
 
-                                        <div>
-                                            <label className="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-2">Tu Email</label>
-                                            <input 
-                                                type="email" 
-                                                name="email" 
-                                                required 
-                                                className="w-full p-4 border-2 border-orange-100 rounded-2xl focus:outline-none focus:border-orange-500 transition-all"
-                                                placeholder="tu@email.com"
-                                            />
-                                        </div>
+                                <h3 className="text-3xl md:text-5xl font-brand text-gray-900 tracking-tighter mb-8 text-center">
+                                    Contacto
+                                </h3>
 
-                                        <div>
-                                            <label className="block text-sm font-bold uppercase tracking-widest text-gray-600 mb-2">Mensaje</label>
-                                            <textarea 
-                                                name="message" 
-                                                required 
-                                                rows="5"
-                                                className="w-full p-4 border-2 border-orange-100 rounded-2xl focus:outline-none focus:border-orange-500 transition-all resize-none"
-                                                placeholder="Contame tu consulta..."
-                                            ></textarea>
-                                        </div>
+                                <form
+                                    action="https://api.web3forms.com/submit"
+                                    method="POST"
+                                    className="space-y-6"
+                                >
+                                    <input type="hidden" name="access_key" value="d1fbc731-2562-480f-bee9-ea8651e00c23" />
 
-                                        <button 
-                                            type="submit" 
-                                            className="w-full bg-orange-600 hover:bg-orange-700 text-white px-10 py-4 rounded-3xl font-black uppercase text-xs md:text-sm tracking-widest transition-all shadow-lg"
-                                        >
-                                            ✉️ Enviar Mensaje
-                                        </button>
-                                    </form>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        required
+                                        placeholder="Tu nombre"
+                                        className="w-full px-6 py-4 rounded-2xl border border-orange-200 focus:outline-none focus:ring-4 focus:ring-orange-500/20"
+                                    />
 
-                                    <div className="flex justify-center gap-6 pt-6 border-t-2 border-orange-100">
-                                        <a href={data.contact.instagram} target="_blank" className="flex flex-col items-center gap-2 transition-all hover:scale-110 group">
-                                            <div className="w-12 h-12 bg-pink-50 group-hover:bg-pink-500 rounded-full flex items-center justify-center transition-all">
-                                                <InstagramIcon size={24} className="text-pink-600 group-hover:text-white transition-colors" />
-                                            </div>
-                                            <span className="text-xs font-bold text-gray-600">Instagram</span>
-                                        </a>
-                                        <a href={data.contact.twitter} target="_blank" className="flex flex-col items-center gap-2 transition-all hover:scale-110 group">
-                                            <div className="w-12 h-12 bg-blue-50 group-hover:bg-blue-500 rounded-full flex items-center justify-center transition-all">
-                                                <XSocialIcon size={20} className="text-blue-600 group-hover:text-white transition-colors" />
-                                            </div>
-                                            <span className="text-xs font-bold text-gray-600">Twitter / X</span>
-                                        </a>
-                                    </div>
-                                </div>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        required
+                                        placeholder="Tu email"
+                                        className="w-full px-6 py-4 rounded-2xl border border-orange-200 focus:outline-none focus:ring-4 focus:ring-orange-500/20"
+                                    />
+
+                                    <textarea
+                                        name="message"
+                                        required
+                                        placeholder="Tu mensaje"
+                                        rows="5"
+                                        className="w-full px-6 py-4 rounded-2xl border border-orange-200 focus:outline-none focus:ring-4 focus:ring-orange-500/20 resize-none"
+                                    ></textarea>
+
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-orange-600 hover:bg-orange-700 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all"
+                                    >
+                                        Enviar mensaje
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     )}
@@ -549,14 +585,14 @@
                                                 <h4 className="text-2xl font-brand flex items-center gap-5 text-gray-900 uppercase tracking-widest"><div className="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600"><Icon name="ChefHat" size={24} /></div> Técnica</h4>
                                                 <p className="text-gray-600 leading-relaxed text-xl italic border-l-8 border-orange-200 pl-10 font-medium">{selectedRecipe.instructions}</p>
                                             </section>
-                                            
+
                                             {/* Cafecito CTA */}
                                             <section className="pt-8 border-t-2 border-orange-100">
                                                 <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-8 rounded-3xl text-center space-y-4">
                                                     <p className="text-gray-700 text-lg font-medium italic">¿Te sirvió esta receta?</p>
-                                                    <a 
-                                                        href="https://cafecito.app/merbakes" 
-                                                        target="_blank" 
+                                                    <a
+                                                        href="https://cafecito.app/merbakes"
+                                                        target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="inline-flex items-center gap-3 bg-orange-600 hover:bg-orange-700 text-white px-8 py-4 rounded-full font-black text-sm uppercase tracking-widest transition-all hover:scale-105 shadow-lg"
                                                     >
@@ -579,14 +615,14 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-    
+
     <script>
         // Inicializar Lucide icons
         if (window.lucide) {
             lucide.createIcons();
         }
     </script>
-    
+
     <script>
         // Register Service Worker
         if ('serviceWorker' in navigator) {
@@ -596,4 +632,5 @@
         }
     </script>
 </body>
+
 </html>
